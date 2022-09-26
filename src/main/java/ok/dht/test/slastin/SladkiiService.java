@@ -3,53 +3,36 @@ package ok.dht.test.slastin;
 import ok.dht.Service;
 import ok.dht.ServiceConfig;
 import ok.dht.test.ServiceFactory;
-import ok.dht.test.slastin.lsm.Config;
 import one.nio.http.HttpServer;
 import one.nio.http.HttpServerConfig;
 import one.nio.server.AcceptorConfig;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public class SladkiiService implements Service {
-    public static Path DEFAULT_DAO_DIRECTORY = Path.of("dao");
-    public static long DEFAULT_FLUSH_THRESHOLD_BYTES = 4 * 1024 * 1024; // 4 Mb
 
-    private final ServiceConfig serviceConfig;
-    private final Config daoConfig;
-
+    private final ServiceConfig config;
     private HttpServer server;
 
-    public SladkiiService(final ServiceConfig serviceConfig) {
-        this(serviceConfig, new Config(
-                serviceConfig.workingDir().resolve(DEFAULT_DAO_DIRECTORY),
-                DEFAULT_FLUSH_THRESHOLD_BYTES)
-        );
-    }
-
-    public SladkiiService(final ServiceConfig serviceConfig, final Config daoConfig) {
-        this.serviceConfig = serviceConfig;
-        this.daoConfig = daoConfig;
+    public SladkiiService(ServiceConfig config) {
+        this.config = config;
     }
 
     @Override
     public CompletableFuture<?> start() throws IOException {
-        var httpServerConfig = makeHttpServerConfig(serviceConfig.selfPort());
-        var component = new SladkiiComponent(daoConfig);
-        server = new SladkiiHttpServer(httpServerConfig, component);
+        server = new SladkiiHttpServer(makeConfig(config.selfPort()));
         server.start();
         return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<?> stop() {
+    public CompletableFuture<?> stop() throws IOException {
         server.stop();
-        server = null;
         return CompletableFuture.completedFuture(null);
     }
 
-    private static HttpServerConfig makeHttpServerConfig(int port) {
+    private static HttpServerConfig makeConfig(int port) {
         HttpServerConfig httpConfig = new HttpServerConfig();
         AcceptorConfig acceptor = new AcceptorConfig();
         acceptor.port = port;
@@ -58,7 +41,7 @@ public class SladkiiService implements Service {
         return httpConfig;
     }
 
-    @ServiceFactory(stage = 1, week = 1, bonuses = "SingleNodeTest#respectFileFolder")
+    @ServiceFactory(stage = 1, week = 1)
     public static class Factory implements ServiceFactory.Factory {
 
         @Override

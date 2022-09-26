@@ -1,6 +1,5 @@
 package ok.dht.test.slastin;
 
-import ok.dht.test.slastin.lsm.DaoException;
 import one.nio.http.HttpServer;
 import one.nio.http.HttpServerConfig;
 import one.nio.http.HttpSession;
@@ -11,27 +10,26 @@ import one.nio.http.Response;
 import one.nio.net.Session;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SladkiiHttpServer extends HttpServer {
-    static final Response BAD_REQUEST = new Response(Response.BAD_REQUEST, Response.EMPTY);
-    static final Response NOT_FOUND = new Response(Response.NOT_FOUND, Response.EMPTY);
-    static final Response CREATED = new Response(Response.CREATED, Response.EMPTY);
-    static final Response ACCEPTED = new Response(Response.ACCEPTED, Response.EMPTY);
-    static final Response INTERNAL_ERROR = new Response(Response.INTERNAL_ERROR, Response.EMPTY);
+    private static final Response BAD_REQUEST = new Response(Response.BAD_REQUEST, Response.EMPTY);
+    private static final Response NOT_FOUND = new Response(Response.NOT_FOUND, Response.EMPTY);
+    private static final Response CREATED = new Response(Response.CREATED, Response.EMPTY);
+    private static final Response ACCEPTED = new Response(Response.ACCEPTED, Response.EMPTY);
 
-    private final SladkiiComponent component;
+    private final Map<String, byte[]> dao;
 
-    public SladkiiHttpServer(
-            final HttpServerConfig httpServerConfig,
-            final SladkiiComponent component
-    ) throws IOException {
-        super(httpServerConfig);
-        this.component = component;
+    public SladkiiHttpServer(final HttpServerConfig config) throws IOException {
+        super(config);
+        dao = new HashMap<>();
     }
 
     @Override
     public void handleDefault(Request request, HttpSession session) throws IOException {
-        session.sendResponse(BAD_REQUEST);
+        Response response = new Response(Response.BAD_REQUEST, Response.EMPTY);
+        session.sendResponse(response);
     }
 
     @Override
@@ -51,15 +49,25 @@ public class SladkiiHttpServer extends HttpServer {
         if (id.isBlank()) {
             return BAD_REQUEST;
         }
-        try {
-            return switch (request.getMethod()) {
-                case Request.METHOD_GET -> component.get(id);
-                case Request.METHOD_PUT -> component.put(id, request);
-                case Request.METHOD_DELETE -> component.delete(id);
-                default -> BAD_REQUEST;
-            };
-        } catch (DaoException e) {
-            return INTERNAL_ERROR;
-        }
+        return switch (request.getMethod()) {
+            case Request.METHOD_GET -> get(id);
+            case Request.METHOD_PUT -> put(id, request);
+            case Request.METHOD_DELETE -> delete(id);
+            default -> BAD_REQUEST;
+        };
+    }
+
+    public Response get(final String id) {
+        return dao.containsKey(id) ? new Response(Response.OK, dao.get(id)) : NOT_FOUND;
+    }
+
+    public Response put(final String id, final Request request) {
+        dao.put(id, request.getBody());
+        return CREATED;
+    }
+
+    public Response delete(final String id) {
+        dao.remove(id);
+        return ACCEPTED;
     }
 }
