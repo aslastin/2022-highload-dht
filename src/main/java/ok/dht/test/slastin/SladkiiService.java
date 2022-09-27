@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class SladkiiService implements Service {
     public static Path DEFAULT_DAO_DIRECTORY = Path.of("dao");
-    public static long DEFAULT_FLUSH_THRESHOLD_BYTES = 4 * 1024 * 1024;
+    public static long DEFAULT_FLUSH_THRESHOLD_BYTES = 4 * 1024 * 1024; // 4 Mb
 
     private final ServiceConfig serviceConfig;
     private final Config daoConfig;
@@ -35,14 +35,17 @@ public class SladkiiService implements Service {
 
     @Override
     public CompletableFuture<?> start() throws IOException {
-        server = new SladkiiHttpServer(makeHttpServerConfig(serviceConfig.selfPort()), daoConfig);
+        var httpServerConfig = makeHttpServerConfig(serviceConfig.selfPort());
+        var component = new SladkiiComponent(daoConfig);
+        server = new SladkiiHttpServer(httpServerConfig, component);
         server.start();
         return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<?> stop() throws IOException {
+    public CompletableFuture<?> stop() {
         server.stop();
+        server = null;
         return CompletableFuture.completedFuture(null);
     }
 
