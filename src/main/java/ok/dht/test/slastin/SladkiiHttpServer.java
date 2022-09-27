@@ -1,5 +1,9 @@
 package ok.dht.test.slastin;
 
+import jdk.incubator.foreign.MemorySegment;
+import ok.dht.test.slastin.lsm.BaseEntry;
+import ok.dht.test.slastin.lsm.Config;
+import ok.dht.test.slastin.lsm.MemorySegmentDao;
 import one.nio.http.HttpServer;
 import one.nio.http.HttpServerConfig;
 import one.nio.http.HttpSession;
@@ -8,10 +12,9 @@ import one.nio.http.Path;
 import one.nio.http.Request;
 import one.nio.http.Response;
 import one.nio.net.Session;
+import one.nio.util.Utf8;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SladkiiHttpServer extends HttpServer {
     private static final Response BAD_REQUEST = new Response(Response.BAD_REQUEST, Response.EMPTY);
@@ -19,11 +22,11 @@ public class SladkiiHttpServer extends HttpServer {
     private static final Response CREATED = new Response(Response.CREATED, Response.EMPTY);
     private static final Response ACCEPTED = new Response(Response.ACCEPTED, Response.EMPTY);
 
-    private final Map<String, byte[]> dao;
+    private final MemorySegmentDao dao;
 
-    public SladkiiHttpServer(final HttpServerConfig config) throws IOException {
-        super(config);
-        dao = new HashMap<>();
+    public SladkiiHttpServer(final HttpServerConfig httpServerConfig, final Config daoConfig) throws IOException {
+        super(httpServerConfig);
+        dao = new MemorySegmentDao(daoConfig);
     }
 
     @Override
@@ -58,16 +61,29 @@ public class SladkiiHttpServer extends HttpServer {
     }
 
     public Response get(final String id) {
-        return dao.containsKey(id) ? new Response(Response.OK, dao.get(id)) : NOT_FOUND;
+        var entry = dao.get(Utils.toMemorySegment(id));
+        return entry != null ? new Response(Response.OK, entry.value().toByteArray()) : NOT_FOUND;
     }
 
     public Response put(final String id, final Request request) {
-        dao.put(id, request.getBody());
+        var entry = new BaseEntry<>(Utils.toMemorySegment(id), Utils.toMemorySegment(request.getBody()));
+        dao.upsert(entry);
         return CREATED;
     }
 
     public Response delete(final String id) {
-        dao.remove(id);
+        var entry = new BaseEntry<>(Utils.toMemorySegment(id), null);
+        dao.upsert(entry);
         return ACCEPTED;
+    }
+
+    private static class Utils {
+        public static MemorySegment toMemorySegment(final String val) {
+            return MemorySegment.ofArray(Utf8.toBytes(val));
+        }
+
+        public static MemorySegment toMemorySegment(final byte[] bytes) {
+            return MemorySegment.ofArray(bytes);
+        }
     }
 }
