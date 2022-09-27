@@ -6,9 +6,9 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-public final class SladkiiServer {
+public final class Server {
 
-    private SladkiiServer() {
+    private Server() {
         // Only main method
     }
 
