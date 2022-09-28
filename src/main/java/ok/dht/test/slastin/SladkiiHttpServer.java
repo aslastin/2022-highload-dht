@@ -1,6 +1,6 @@
 package ok.dht.test.slastin;
 
-import ok.dht.test.slastin.lsm.DaoException;
+import ok.dht.test.slastin.lsm.exception.DaoException;
 import one.nio.http.HttpServer;
 import one.nio.http.HttpServerConfig;
 import one.nio.http.HttpSession;
@@ -26,7 +26,7 @@ public class SladkiiHttpServer extends HttpServer {
 
     @Override
     public void handleDefault(Request request, HttpSession session) throws IOException {
-        session.sendResponse(BAD_REQUEST());
+        session.sendResponse(badRequest());
     }
 
     @Override
@@ -44,37 +44,37 @@ public class SladkiiHttpServer extends HttpServer {
             final Request request
     ) {
         if (id.isBlank()) {
-            return BAD_REQUEST();
+            return badRequest();
         }
         try {
             return switch (request.getMethod()) {
                 case Request.METHOD_GET -> component.get(id);
                 case Request.METHOD_PUT -> component.put(id, request);
                 case Request.METHOD_DELETE -> component.delete(id);
-                default -> BAD_REQUEST();
+                default -> badRequest();
             };
         } catch (DaoException e) {
-            return INTERNAL_ERROR();
+            return internalError();
         }
     }
 
-    static Response BAD_REQUEST() {
+    static Response badRequest() {
         return new Response(Response.BAD_REQUEST, Response.EMPTY);
     }
 
-    static Response INTERNAL_ERROR() {
+    static Response internalError() {
         return new Response(Response.INTERNAL_ERROR, Response.EMPTY);
     }
 
-    static Response NOT_FOUND() {
+    static Response notFound() {
         return new Response(Response.NOT_FOUND, Response.EMPTY);
     }
 
-    static Response CREATED() {
+    static Response created() {
         return new Response(Response.CREATED, Response.EMPTY);
     }
 
-    static Response ACCEPTED() {
+    static Response accepted() {
         return new Response(Response.ACCEPTED, Response.EMPTY);
     }
 }

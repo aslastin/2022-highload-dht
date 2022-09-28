@@ -1,10 +1,11 @@
-package ok.dht.test.slastin.lsm;
+package ok.dht.test.slastin.lsm.comparator;
 
 import jdk.incubator.foreign.MemorySegment;
+import ok.dht.test.slastin.lsm.Entry;
 
 import java.util.Comparator;
 
-final public class EntryKeyComparator implements Comparator<Entry<MemorySegment>> {
+public final class EntryKeyComparator implements Comparator<Entry<MemorySegment>> {
 
     public static final Comparator<Entry<MemorySegment>> INSTANCE = new EntryKeyComparator();
 

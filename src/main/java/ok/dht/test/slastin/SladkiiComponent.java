@@ -10,9 +10,9 @@ import one.nio.util.Utf8;
 
 import java.io.IOException;
 
-import static ok.dht.test.slastin.SladkiiHttpServer.ACCEPTED;
-import static ok.dht.test.slastin.SladkiiHttpServer.CREATED;
-import static ok.dht.test.slastin.SladkiiHttpServer.NOT_FOUND;
+import static ok.dht.test.slastin.SladkiiHttpServer.accepted;
+import static ok.dht.test.slastin.SladkiiHttpServer.created;
+import static ok.dht.test.slastin.SladkiiHttpServer.notFound;
 
 public class SladkiiComponent {
 
@@ -24,19 +24,19 @@ public class SladkiiComponent {
 
     public Response get(final String id) {
         var entry = dao.get(toMemorySegment(id));
-        return entry == null ? NOT_FOUND() : new Response(Response.OK, entry.value().toByteArray());
+        return entry == null ? notFound() : new Response(Response.OK, entry.value().toByteArray());
     }
 
     public Response put(final String id, final Request request) {
         var entry = new BaseEntry<>(toMemorySegment(id), toMemorySegment(request.getBody()));
         dao.upsert(entry);
-        return CREATED();
+        return created();
     }
 
     public Response delete(final String id) {
         var entry = new BaseEntry<>(toMemorySegment(id), null);
         dao.upsert(entry);
-        return ACCEPTED();
+        return accepted();
     }
 
     private static MemorySegment toMemorySegment(final String val) {

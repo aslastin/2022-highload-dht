@@ -1,4 +1,4 @@
-package ok.dht.test.slastin.lsm;
+package ok.dht.test.slastin.lsm.iterator;
 
 import java.util.Collections;
 import java.util.Comparator;
