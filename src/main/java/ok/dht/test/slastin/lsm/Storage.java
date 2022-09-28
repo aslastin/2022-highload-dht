@@ -4,7 +4,7 @@ import jdk.incubator.foreign.MemoryAccess;
 import jdk.incubator.foreign.MemorySegment;
 import jdk.incubator.foreign.ResourceScope;
 import ok.dht.test.slastin.lsm.comparator.MemorySegmentComparator;
-import ok.dht.test.slastin.lsm.exception.StorageClosedDaoException;
+import ok.dht.test.slastin.lsm.exception.StorageClosedDaoRuntimeException;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -138,7 +138,7 @@ class Storage implements Closeable {
 
     private RuntimeException checkForClose(IllegalStateException e) {
         if (isClosed()) {
-            throw new StorageClosedDaoException(e);
+            throw new StorageClosedDaoRuntimeException(e);
         } else {
             throw e;
         }

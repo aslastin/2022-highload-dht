@@ -2,7 +2,7 @@ package ok.dht.test.slastin.lsm;
 
 import jdk.incubator.foreign.MemorySegment;
 import ok.dht.test.slastin.lsm.comparator.EntryKeyComparator;
-import ok.dht.test.slastin.lsm.exception.TooManyFlushesInBgDaoException;
+import ok.dht.test.slastin.lsm.exception.TooManyFlushesInBgDaoRuntimeException;
 import ok.dht.test.slastin.lsm.iterator.MergeIterator;
 import ok.dht.test.slastin.lsm.iterator.TombstoneFilteringIterator;
 import org.slf4j.Logger;
@@ -99,7 +99,7 @@ public class MemorySegmentDao implements Dao<MemorySegment, Entry<MemorySegment>
                     // or any other completed future
                     return CompletableFuture.completedFuture(null);
                 }
-                throw new TooManyFlushesInBgDaoException();
+                throw new TooManyFlushesInBgDaoRuntimeException();
             }
 
             state = state.prepareForFlush();
@@ -199,10 +199,10 @@ public class MemorySegmentDao implements Dao<MemorySegment, Entry<MemorySegment>
     private void awaitAndUnwrap(Future<?> future) {
         try {
             future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
     }
@@ -225,7 +225,7 @@ public class MemorySegmentDao implements Dao<MemorySegment, Entry<MemorySegment>
         try {
             //noinspection StatementWithEmptyBody
             while (!executor.awaitTermination(10, TimeUnit.DAYS)) {
-                // do nothing while waiting
+                ;
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
