@@ -24,19 +24,19 @@ public class SladkiiComponent {
 
     public Response get(final String id) {
         var entry = dao.get(toMemorySegment(id));
-        return entry != null ? new Response(Response.OK, entry.value().toByteArray()) : NOT_FOUND;
+        return entry == null ? NOT_FOUND() : new Response(Response.OK, entry.value().toByteArray());
     }
 
     public Response put(final String id, final Request request) {
         var entry = new BaseEntry<>(toMemorySegment(id), toMemorySegment(request.getBody()));
         dao.upsert(entry);
-        return CREATED;
+        return CREATED();
     }
 
     public Response delete(final String id) {
         var entry = new BaseEntry<>(toMemorySegment(id), null);
         dao.upsert(entry);
-        return ACCEPTED;
+        return ACCEPTED();
     }
 
     private static MemorySegment toMemorySegment(final String val) {
