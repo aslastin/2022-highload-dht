@@ -2,7 +2,7 @@ package ok.dht.test.slastin.lsm;
 
 import jdk.incubator.foreign.MemorySegment;
 import ok.dht.test.slastin.lsm.comparator.EntryKeyComparator;
-import ok.dht.test.slastin.lsm.exception.TooManyFlushesInBgDaoRuntimeException;
+import ok.dht.test.slastin.lsm.exception.TooManyFlushesInBg;
 import ok.dht.test.slastin.lsm.iterator.MergeIterator;
 import ok.dht.test.slastin.lsm.iterator.TombstoneFilteringIterator;
 import org.slf4j.Logger;
@@ -99,7 +99,7 @@ public class MemorySegmentDao implements Dao<MemorySegment, Entry<MemorySegment>
                     // or any other completed future
                     return CompletableFuture.completedFuture(null);
                 }
-                throw new TooManyFlushesInBgDaoRuntimeException();
+                throw new TooManyFlushesInBg();
             }
 
             state = state.prepareForFlush();

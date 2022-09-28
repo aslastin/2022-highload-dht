@@ -1,6 +1,6 @@
 package ok.dht.test.slastin;
 
-import ok.dht.test.slastin.lsm.exception.DaoRuntimeException;
+import ok.dht.test.slastin.lsm.exception.DaoException;
 import one.nio.http.HttpServer;
 import one.nio.http.HttpServerConfig;
 import one.nio.http.HttpSession;
@@ -53,7 +53,7 @@ public class SladkiiHttpServer extends HttpServer {
                 case Request.METHOD_DELETE -> component.delete(id);
                 default -> badRequest();
             };
-        } catch (DaoRuntimeException e) {
+        } catch (DaoException e) {
             return internalError();
         }
     }
