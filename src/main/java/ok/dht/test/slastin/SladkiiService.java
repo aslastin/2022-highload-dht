@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class SladkiiService implements Service {
     public static Path DEFAULT_DAO_DIRECTORY = Path.of("dao");
-    public static long DEFAULT_FLUSH_THRESHOLD_BYTES = 8 * 1024 * 1024; // 8 Mb
+    public static long DEFAULT_FLUSH_THRESHOLD_BYTES = 4 * 1024 * 1024; // 4 Mb
 
     private final ServiceConfig serviceConfig;
     private final Config daoConfig;

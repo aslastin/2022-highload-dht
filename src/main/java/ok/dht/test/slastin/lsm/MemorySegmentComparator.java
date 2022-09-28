@@ -5,7 +5,7 @@ import jdk.incubator.foreign.MemorySegment;
 
 import java.util.Comparator;
 
-public class MemorySegmentComparator implements Comparator<MemorySegment> {
+final public class MemorySegmentComparator implements Comparator<MemorySegment> {
 
     public static final Comparator<MemorySegment> INSTANCE = new MemorySegmentComparator();
 
