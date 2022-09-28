@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.ThreadFactory;
 
-class StorageUtils {
+final class StorageUtils {
 
     private static final Cleaner CLEANER = Cleaner.create(new ThreadFactory() {
         @Override
@@ -50,8 +50,7 @@ class StorageUtils {
         ArrayList<MemorySegment> sstables = new ArrayList<>();
         ResourceScope scope = ResourceScope.newSharedScope(CLEANER);
 
-        // FIXME check existing files
-        for (int i = 0; ; i++) {
+        for (int i = 0; true; i++) {
             Path nextFile = basePath.resolve(FILE_NAME + i + FILE_EXT);
             try {
                 sstables.add(mapForRead(scope, nextFile));

@@ -2,15 +2,15 @@ package ok.dht.test.slastin.lsm;
 
 import jdk.incubator.foreign.MemorySegment;
 import ok.dht.test.slastin.lsm.comparator.EntryKeyComparator;
-import ok.dht.test.slastin.lsm.exception.TooManyFlushesInBgException;
+import ok.dht.test.slastin.lsm.exception.TooManyFlushesInBgDaoException;
 import ok.dht.test.slastin.lsm.iterator.MergeIterator;
 import ok.dht.test.slastin.lsm.iterator.TombstoneFilteringIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -48,7 +48,7 @@ public class MemorySegmentDao implements Dao<MemorySegment, Entry<MemorySegment>
     private TombstoneFilteringIterator getTombstoneFilteringIterator(MemorySegment from, MemorySegment to) {
         State state = accessState();
 
-        ArrayList<Iterator<Entry<MemorySegment>>> iterators = state.storage.iterate(from, to);
+        List<Iterator<Entry<MemorySegment>>> iterators = state.storage.iterate(from, to);
 
         iterators.add(state.flushing.get(from, to));
         iterators.add(state.memory.get(from, to));
@@ -97,7 +97,7 @@ public class MemorySegmentDao implements Dao<MemorySegment, Entry<MemorySegment>
                     // or any other completed future
                     return CompletableFuture.completedFuture(null);
                 }
-                throw new TooManyFlushesInBgException();
+                throw new TooManyFlushesInBgDaoException();
             }
 
             state = state.prepareForFlush();
@@ -200,13 +200,7 @@ public class MemorySegmentDao implements Dao<MemorySegment, Entry<MemorySegment>
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
-            try {
-                throw e.getCause();
-            } catch (RuntimeException | IOException | Error r) {
-                throw r;
-            } catch (Throwable t) {
-                throw new RuntimeException(t);
-            }
+           throw new RuntimeException(e.getCause());
         }
     }
 
@@ -227,7 +221,8 @@ public class MemorySegmentDao implements Dao<MemorySegment, Entry<MemorySegment>
         executor.shutdown();
         try {
             //noinspection StatementWithEmptyBody
-            while (!executor.awaitTermination(10, TimeUnit.DAYS)) ;
+            while (!executor.awaitTermination(10, TimeUnit.DAYS)) {
+            }
         } catch (InterruptedException e) {
             throw new IllegalStateException(e);
         }

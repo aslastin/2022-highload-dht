@@ -4,7 +4,7 @@ import jdk.incubator.foreign.MemoryAccess;
 import jdk.incubator.foreign.MemorySegment;
 import jdk.incubator.foreign.ResourceScope;
 import ok.dht.test.slastin.lsm.comparator.MemorySegmentComparator;
-import ok.dht.test.slastin.lsm.exception.StorageClosedException;
+import ok.dht.test.slastin.lsm.exception.StorageClosedDaoException;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -45,7 +45,6 @@ class Storage implements Closeable {
         }
         long recordsCount = MemoryAccess.getLongAtOffset(sstable, 8);
         if (key == null) {
-            // fixme
             return recordsCount;
         }
 
@@ -125,7 +124,7 @@ class Storage implements Closeable {
 
     // last is newer
     // it is ok to mutate list after
-    public ArrayList<Iterator<Entry<MemorySegment>>> iterate(MemorySegment keyFrom, MemorySegment keyTo) {
+    public List<Iterator<Entry<MemorySegment>>> iterate(MemorySegment keyFrom, MemorySegment keyTo) {
         try {
             ArrayList<Iterator<Entry<MemorySegment>>> iterators = new ArrayList<>(sstables.size());
             for (MemorySegment sstable : sstables) {
@@ -139,7 +138,7 @@ class Storage implements Closeable {
 
     private RuntimeException checkForClose(IllegalStateException e) {
         if (isClosed()) {
-            throw new StorageClosedException(e);
+            throw new StorageClosedDaoException(e);
         } else {
             throw e;
         }
