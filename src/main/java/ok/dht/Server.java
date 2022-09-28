@@ -1,6 +1,6 @@
-package ok.dht.test.slastin;
+package ok.dht;
 
-import ok.dht.ServiceConfig;
+import ok.dht.test.slastin.SladkiiService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,15 +8,14 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-public final class SladkiiServer {
-
-    private SladkiiServer() {
-        // Only main method
-    }
-
+public final class Server {
     private final static int DEFAULT_SERVER_PORT = 2022;
     private final static String DEFAULT_SERVER_URL = "http://localhost:" + DEFAULT_SERVER_PORT;
     private final static String DEFAULT_SERVER_NAME = "server";
+
+    private Server() {
+        // Only main method
+    }
 
     private static Path createServerDirectory(final String serverDirectoryName) throws IOException {
         final Path serverDirectory = Path.of(serverDirectoryName);
