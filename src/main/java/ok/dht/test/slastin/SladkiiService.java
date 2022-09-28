@@ -46,7 +46,7 @@ public class SladkiiService implements Service {
     private SladkiiComponent makeComponent() throws IOException {
         var daoDirectoryPath = daoConfig.basePath();
         if (Files.notExists(daoDirectoryPath)) {
-            Files.createDirectory(daoDirectoryPath);
+            Files.createDirectories(daoDirectoryPath);
         }
         return new SladkiiComponent(daoConfig);
     }

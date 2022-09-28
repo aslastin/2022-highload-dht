@@ -1,6 +1,10 @@
 package ok.dht.test.slastin.lsm;
 
 public class DaoException extends RuntimeException {
+    public DaoException() {
+        // just an empty constructor
+    }
+
     public DaoException(String message) {
         super(message);
     }
