@@ -18,16 +18,11 @@ import java.util.concurrent.ThreadFactory;
 
 final class StorageUtils {
 
-    private static final Cleaner CLEANER = Cleaner.create(new ThreadFactory() {
+    private static final Cleaner CLEANER = Cleaner.create((Runnable r) -> new Thread(r, "Storage-Cleaner") {
         @Override
-        public Thread newThread(Runnable r) {
-            return new Thread(r, "Storage-Cleaner") {
-                @Override
-                public synchronized void start() {
-                    setDaemon(true);
-                    super.start();
-                }
-            };
+        public synchronized void start() {
+            setDaemon(true);
+            super.start();
         }
     });
 
@@ -87,8 +82,8 @@ final class StorageUtils {
             long size = 0;
             long entriesCount = 0;
             boolean hasTombstone = false;
-            for (Iterator<Entry<MemorySegment>> iterator = entries.iterator(); iterator.hasNext(); ) {
-                Entry<MemorySegment> entry = iterator.next();
+            for (Iterator<Entry<MemorySegment>> it = entries.iterator(); it.hasNext(); ) {
+                Entry<MemorySegment> entry = it.next();
                 size += getSize(entry);
                 if (entry.isTombstone()) {
                     hasTombstone = true;

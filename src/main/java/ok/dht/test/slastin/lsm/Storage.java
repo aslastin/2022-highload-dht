@@ -22,7 +22,7 @@ class Storage implements Closeable {
     final List<MemorySegment> sstables;
     private final boolean hasTombstones;
 
-    Storage(ResourceScope scope, ArrayList<MemorySegment> sstables, boolean hasTombstones) {
+    Storage(ResourceScope scope, List<MemorySegment> sstables, boolean hasTombstones) {
         this.scope = scope;
         this.sstables = sstables;
         this.hasTombstones = hasTombstones;
