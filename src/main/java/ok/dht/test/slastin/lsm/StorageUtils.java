@@ -14,7 +14,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.concurrent.ThreadFactory;
 
 final class StorageUtils {
 
@@ -82,7 +81,8 @@ final class StorageUtils {
             long size = 0;
             long entriesCount = 0;
             boolean hasTombstone = false;
-            for (Iterator<Entry<MemorySegment>> it = entries.iterator(); it.hasNext(); ) {
+            var it = entries.iterator();
+            while (it.hasNext()) {
                 Entry<MemorySegment> entry = it.next();
                 size += getSize(entry);
                 if (entry.isTombstone()) {
@@ -103,7 +103,8 @@ final class StorageUtils {
 
             long index = 0;
             long offset = dataStart;
-            for (Iterator<Entry<MemorySegment>> iterator = entries.iterator(); iterator.hasNext(); ) {
+            var iterator = entries.iterator();
+            while (iterator.hasNext()) {
                 Entry<MemorySegment> entry = iterator.next();
                 MemoryAccess.setLongAtOffset(nextSSTable, INDEX_HEADER_SIZE + index * INDEX_RECORD_SIZE, offset);
 
