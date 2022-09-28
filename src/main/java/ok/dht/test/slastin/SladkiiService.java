@@ -9,12 +9,13 @@ import one.nio.http.HttpServerConfig;
 import one.nio.server.AcceptorConfig;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public class SladkiiService implements Service {
     public static Path DEFAULT_DAO_DIRECTORY = Path.of("dao");
-    public static long DEFAULT_FLUSH_THRESHOLD_BYTES = 4 * 1024 * 1024; // 4 Mb
+    public static long DEFAULT_FLUSH_THRESHOLD_BYTES = 8 * 1024 * 1024; // 8 Mb
 
     private final ServiceConfig serviceConfig;
     private final Config daoConfig;
@@ -36,10 +37,18 @@ public class SladkiiService implements Service {
     @Override
     public CompletableFuture<?> start() throws IOException {
         var httpServerConfig = makeHttpServerConfig(serviceConfig.selfPort());
-        var component = new SladkiiComponent(daoConfig);
+        var component = makeComponent();
         server = new SladkiiHttpServer(httpServerConfig, component);
         server.start();
         return CompletableFuture.completedFuture(null);
+    }
+
+    private SladkiiComponent makeComponent() throws IOException {
+        var daoDirectoryPath = daoConfig.basePath();
+        if (Files.notExists(daoDirectoryPath)) {
+            Files.createDirectory(daoDirectoryPath);
+        }
+        return new SladkiiComponent(daoConfig);
     }
 
     @Override
