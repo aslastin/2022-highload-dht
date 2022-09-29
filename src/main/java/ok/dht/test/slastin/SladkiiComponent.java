@@ -8,13 +8,14 @@ import one.nio.http.Request;
 import one.nio.http.Response;
 import one.nio.util.Utf8;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import static ok.dht.test.slastin.SladkiiHttpServer.accepted;
 import static ok.dht.test.slastin.SladkiiHttpServer.created;
 import static ok.dht.test.slastin.SladkiiHttpServer.notFound;
 
-public class SladkiiComponent {
+public class SladkiiComponent implements Closeable {
 
     private final MemorySegmentDao dao;
 
@@ -45,5 +46,10 @@ public class SladkiiComponent {
 
     private static MemorySegment toMemorySegment(final byte[] bytes) {
         return MemorySegment.ofArray(bytes);
+    }
+
+    @Override
+    public void close() throws IOException {
+        dao.close();
     }
 }
