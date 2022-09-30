@@ -1,8 +1,9 @@
 wrk.method = "GET"
 
-counter = 0
+math.randomseed(os.time())
+
 request = function()
-    path = "/v0/entity?id=" .. counter
-    counter = counter + 1
+    id = math.random(30000)
+    path = "/v0/entity?id=" .. id
     return wrk.format(nil, path)
 end
