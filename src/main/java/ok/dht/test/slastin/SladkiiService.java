@@ -3,7 +3,6 @@ package ok.dht.test.slastin;
 import ok.dht.Service;
 import ok.dht.ServiceConfig;
 import ok.dht.test.ServiceFactory;
-import ok.dht.test.slastin.lsm.Config;
 import one.nio.http.HttpServerConfig;
 import one.nio.server.AcceptorConfig;
 
@@ -11,50 +10,79 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+
+import org.rocksdb.*;
+import org.rocksdb.util.SizeUnit;
 
 public class SladkiiService implements Service {
-    public static Path DEFAULT_DAO_DIRECTORY = Path.of("dao");
-    public static long DEFAULT_FLUSH_THRESHOLD_BYTES = 4 * 1024 * 1024; // 4 Mb
+    public static Path DEFAULT_DB_DIRECTORY = Path.of("db");
+    public static long DEFAULT_MEMTABLE_SIZE = 8 * SizeUnit.MB;
+
+    public static Supplier<Options> DEFAULT_OPTIONS_SUPPLIER = () -> new Options()
+            .setCreateIfMissing(true)
+            .setWriteBufferSize(DEFAULT_MEMTABLE_SIZE)
+            .setMaxTotalWalSize(DEFAULT_MEMTABLE_SIZE)
+            .setLevelCompactionDynamicLevelBytes(true);
 
     private final ServiceConfig serviceConfig;
-    private final Config daoConfig;
+    private final Supplier<Options> dbOptionsSupplier;
 
+    private Options dbOptions;
     private SladkiiComponent component;
     private SladkiiHttpServer server;
 
-    public SladkiiService(final ServiceConfig serviceConfig) {
-        this(serviceConfig, new Config(
-                serviceConfig.workingDir().resolve(DEFAULT_DAO_DIRECTORY),
-                DEFAULT_FLUSH_THRESHOLD_BYTES)
-        );
+    private boolean isClosed;
+
+    public SladkiiService(ServiceConfig serviceConfig) {
+        this(serviceConfig, DEFAULT_OPTIONS_SUPPLIER);
     }
 
-    public SladkiiService(final ServiceConfig serviceConfig, final Config daoConfig) {
+    public SladkiiService(ServiceConfig serviceConfig, Supplier<Options> dbOptionsSupplier) {
         this.serviceConfig = serviceConfig;
-        this.daoConfig = daoConfig;
+        this.dbOptionsSupplier = dbOptionsSupplier;
     }
 
     @Override
     public CompletableFuture<?> start() throws IOException {
-        component = makeComponent();
+        isClosed = false;
 
-        server = makeServer();
+        dbOptions = dbOptionsSupplier.get();
+
+        component = makeComponent(dbOptions, serviceConfig.workingDir());
+
+        var httpServerConfig = makeHttpServerConfig(serviceConfig.selfPort());
+        server = new SladkiiHttpServer(httpServerConfig, component);
+
         server.start();
 
         return CompletableFuture.completedFuture(null);
     }
 
-    private SladkiiComponent makeComponent() throws IOException {
-        var daoDirectoryPath = daoConfig.basePath();
-        if (Files.notExists(daoDirectoryPath)) {
-            Files.createDirectories(daoDirectoryPath);
+    @Override
+    public CompletableFuture<?> stop() throws IOException {
+        if (!isClosed) {
+            server.stop();
+            server = null;
+
+            component.close();
+            component = null;
+
+            dbOptions.close();
+            dbOptions = null;
+
+            isClosed = true;
         }
-        return new SladkiiComponent(daoConfig);
+
+        return CompletableFuture.completedFuture(null);
     }
 
-    private SladkiiHttpServer makeServer() throws IOException {
-        var httpServerConfig = makeHttpServerConfig(serviceConfig.selfPort());
-        return new SladkiiHttpServer(httpServerConfig, component);
+    private static SladkiiComponent makeComponent(Options dbOptions, Path serverDirectory) throws IOException {
+        Path location = serverDirectory.resolve(DEFAULT_DB_DIRECTORY);
+        if (Files.notExists(location)) {
+            Files.createDirectories(location);
+        }
+        return new SladkiiComponent(dbOptions, location.toString());
     }
 
     private static HttpServerConfig makeHttpServerConfig(int port) {
@@ -64,17 +92,6 @@ public class SladkiiService implements Service {
         acceptor.reusePort = true;
         httpConfig.acceptors = new AcceptorConfig[]{acceptor};
         return httpConfig;
-    }
-
-    @Override
-    public CompletableFuture<?> stop() throws IOException {
-        server.stop();
-        server = null;
-
-        component.close();
-        component = null;
-
-        return CompletableFuture.completedFuture(null);
     }
 
     @ServiceFactory(stage = 1, week = 1, bonuses = "SingleNodeTest#respectFileFolder")
