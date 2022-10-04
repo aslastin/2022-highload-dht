@@ -1,55 +1,71 @@
 package ok.dht.test.slastin;
 
-import jdk.incubator.foreign.MemorySegment;
-import ok.dht.test.slastin.lsm.BaseEntry;
-import ok.dht.test.slastin.lsm.Config;
-import ok.dht.test.slastin.lsm.MemorySegmentDao;
 import one.nio.http.Request;
 import one.nio.http.Response;
-import one.nio.util.Utf8;
+import org.rocksdb.Options;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
 
 import java.io.Closeable;
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
-import static ok.dht.test.slastin.SladkiiHttpServer.accepted;
-import static ok.dht.test.slastin.SladkiiHttpServer.created;
-import static ok.dht.test.slastin.SladkiiHttpServer.notFound;
+import static ok.dht.test.slastin.SladkiiHttpServer.*;
 
 public class SladkiiComponent implements Closeable {
 
-    private final MemorySegmentDao dao;
+    private RocksDB db;
 
-    public SladkiiComponent(final Config daoConfig) throws IOException {
-        dao = new MemorySegmentDao(daoConfig);
+    public SladkiiComponent(Options options, String location) {
+        try {
+            db = RocksDB.open(options, location);
+        } catch (RocksDBException e) {
+            // TODO
+            System.err.println("Can not open DB: " + e.getMessage());
+        }
     }
 
-    public Response get(final String id) {
-        var entry = dao.get(toMemorySegment(id));
-        return entry == null ? notFound() : new Response(Response.OK, entry.value().toByteArray());
+    public Response get(String id) {
+        try {
+            byte[] value = db.get(toBytes(id));
+            return value == null ? notFound() : new Response(Response.OK, value);
+        } catch (RocksDBException e) {
+            // TODO
+            System.err.println("get");
+            return internalError();
+        }
     }
 
-    public Response put(final String id, final Request request) {
-        var entry = new BaseEntry<>(toMemorySegment(id), toMemorySegment(request.getBody()));
-        dao.upsert(entry);
-        return created();
+    public Response put(String id, Request request) {
+        try {
+            db.put(toBytes(id), request.getBody());
+            return created();
+        } catch (RocksDBException e) {
+            // todo
+            System.err.println("put");
+            return internalError();
+        }
     }
 
-    public Response delete(final String id) {
-        var entry = new BaseEntry<>(toMemorySegment(id), null);
-        dao.upsert(entry);
-        return accepted();
+    public Response delete(String id) {
+        try {
+            db.delete(toBytes(id));
+            return accepted();
+        } catch (RocksDBException e) {
+            // todo
+            System.err.println("put");
+            return internalError();
+        }
     }
 
-    private static MemorySegment toMemorySegment(final String val) {
-        return MemorySegment.ofArray(Utf8.toBytes(val));
-    }
-
-    private static MemorySegment toMemorySegment(final byte[] bytes) {
-        return MemorySegment.ofArray(bytes);
+    private static byte[] toBytes(String value) {
+        return value.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
-    public void close() throws IOException {
-        dao.close();
+    public void close() {
+        if (db != null) {
+            db.close();
+            db = null;
+        }
     }
 }
