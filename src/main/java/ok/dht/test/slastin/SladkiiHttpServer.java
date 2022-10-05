@@ -43,8 +43,12 @@ public class SladkiiHttpServer extends HttpServer {
             case Request.METHOD_GET -> component.get(id);
             case Request.METHOD_PUT -> component.put(id, request);
             case Request.METHOD_DELETE -> component.delete(id);
-            default -> badRequest();
+            default -> badMethod();
         };
+    }
+
+    static Response badMethod() {
+        return new Response(Response.METHOD_NOT_ALLOWED, Response.EMPTY);
     }
 
     static Response badRequest() {
