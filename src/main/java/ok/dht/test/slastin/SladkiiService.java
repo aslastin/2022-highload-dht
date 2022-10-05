@@ -5,15 +5,14 @@ import ok.dht.ServiceConfig;
 import ok.dht.test.ServiceFactory;
 import one.nio.http.HttpServerConfig;
 import one.nio.server.AcceptorConfig;
+import org.rocksdb.Options;
+import org.rocksdb.util.SizeUnit;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-
-import org.rocksdb.*;
-import org.rocksdb.util.SizeUnit;
 
 public class SladkiiService implements Service {
     public static Path DEFAULT_DB_DIRECTORY = Path.of("db");
@@ -60,7 +59,7 @@ public class SladkiiService implements Service {
     }
 
     @Override
-    public CompletableFuture<?> stop() throws IOException {
+    public CompletableFuture<?> stop() {
         if (!isClosed) {
             server.stop();
             server = null;
