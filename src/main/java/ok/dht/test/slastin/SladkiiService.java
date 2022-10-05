@@ -12,33 +12,49 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SladkiiService implements Service {
-    public static Path DEFAULT_DB_DIRECTORY = Path.of("db");
-    public static long DEFAULT_MEMTABLE_SIZE = 8 * SizeUnit.MB;
+    public static final Path DEFAULT_DB_DIRECTORY = Path.of("db");
+    public static final long DEFAULT_MEMTABLE_SIZE = 8 * SizeUnit.MB;
 
-    public static Supplier<Options> DEFAULT_OPTIONS_SUPPLIER = () -> new Options()
+    public static final Supplier<Options> DEFAULT_OPTIONS_SUPPLIER = () -> new Options()
             .setCreateIfMissing(true)
             .setWriteBufferSize(DEFAULT_MEMTABLE_SIZE)
             .setLevelCompactionDynamicLevelBytes(true);
 
+    public static final Function<ServiceConfig, HttpServerConfig> DEFAULT_HTTP_CONFIG_MAPPER = serviceConfig -> {
+        HttpServerConfig httpConfig = new HttpServerConfig();
+        AcceptorConfig acceptor = new AcceptorConfig();
+        acceptor.port = serviceConfig.selfPort();
+        acceptor.reusePort = true;
+        httpConfig.acceptors = new AcceptorConfig[]{acceptor};
+        return httpConfig;
+    };
+
     private final ServiceConfig serviceConfig;
     private final Supplier<Options> dbOptionsSupplier;
+    private final Function<ServiceConfig, HttpServerConfig> httpConfigMapper;
 
     private Options dbOptions;
     private SladkiiComponent component;
-    private SladkiiHttpServer server;
+    private SladkiiServer server;
 
     private boolean isClosed;
 
     public SladkiiService(ServiceConfig serviceConfig) {
-        this(serviceConfig, DEFAULT_OPTIONS_SUPPLIER);
+        this(serviceConfig, DEFAULT_OPTIONS_SUPPLIER, DEFAULT_HTTP_CONFIG_MAPPER);
     }
 
-    public SladkiiService(ServiceConfig serviceConfig, Supplier<Options> dbOptionsSupplier) {
+    public SladkiiService(
+            ServiceConfig serviceConfig,
+            Supplier<Options> dbOptionsSupplier,
+            Function<ServiceConfig, HttpServerConfig> httpConfigSupplier
+    ) {
         this.serviceConfig = serviceConfig;
         this.dbOptionsSupplier = dbOptionsSupplier;
+        this.httpConfigMapper = httpConfigSupplier;
     }
 
     @Override
@@ -46,12 +62,9 @@ public class SladkiiService implements Service {
         isClosed = false;
 
         dbOptions = dbOptionsSupplier.get();
-
         component = makeComponent(dbOptions, serviceConfig.workingDir());
 
-        var httpServerConfig = makeHttpServerConfig(serviceConfig.selfPort());
-        server = new SladkiiHttpServer(httpServerConfig, component);
-
+        server = new SladkiiServer(httpConfigMapper.apply(serviceConfig), component);
         server.start();
 
         return CompletableFuture.completedFuture(null);
@@ -81,15 +94,6 @@ public class SladkiiService implements Service {
             Files.createDirectories(location);
         }
         return new SladkiiComponent(dbOptions, location.toString());
-    }
-
-    private static HttpServerConfig makeHttpServerConfig(int port) {
-        HttpServerConfig httpConfig = new HttpServerConfig();
-        AcceptorConfig acceptor = new AcceptorConfig();
-        acceptor.port = port;
-        acceptor.reusePort = true;
-        httpConfig.acceptors = new AcceptorConfig[]{acceptor};
-        return httpConfig;
     }
 
     @ServiceFactory(stage = 1, week = 1, bonuses = "SingleNodeTest#respectFileFolder")

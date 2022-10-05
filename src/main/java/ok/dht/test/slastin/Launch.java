@@ -10,14 +10,14 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-public final class Server {
-    private static final Logger log = LoggerFactory.getLogger(Server.class);
+public final class Launch {
+    private static final Logger log = LoggerFactory.getLogger(Launch.class);
 
     private static final int DEFAULT_SERVER_PORT = 2022;
     private static final String DEFAULT_SERVER_URL = "http://localhost:" + DEFAULT_SERVER_PORT;
     private static final String DEFAULT_SERVER_NAME = "server";
 
-    private Server() {
+    private Launch() {
         // Only main method
     }
 

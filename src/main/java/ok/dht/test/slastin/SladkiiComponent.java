@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.nio.charset.StandardCharsets;
 
-import static ok.dht.test.slastin.SladkiiHttpServer.accepted;
-import static ok.dht.test.slastin.SladkiiHttpServer.created;
-import static ok.dht.test.slastin.SladkiiHttpServer.internalError;
-import static ok.dht.test.slastin.SladkiiHttpServer.notFound;
+import static ok.dht.test.slastin.SladkiiServer.accepted;
+import static ok.dht.test.slastin.SladkiiServer.created;
+import static ok.dht.test.slastin.SladkiiServer.internalError;
+import static ok.dht.test.slastin.SladkiiServer.notFound;
 
 public class SladkiiComponent implements Closeable {
     private static final Logger log = LoggerFactory.getLogger(SladkiiComponent.class);
