@@ -5,13 +5,19 @@ import one.nio.http.Response;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.nio.charset.StandardCharsets;
 
-import static ok.dht.test.slastin.SladkiiHttpServer.*;
+import static ok.dht.test.slastin.SladkiiHttpServer.accepted;
+import static ok.dht.test.slastin.SladkiiHttpServer.created;
+import static ok.dht.test.slastin.SladkiiHttpServer.internalError;
+import static ok.dht.test.slastin.SladkiiHttpServer.notFound;
 
 public class SladkiiComponent implements Closeable {
+    private static final Logger log = LoggerFactory.getLogger(SladkiiComponent.class);
 
     private RocksDB db;
 
@@ -19,8 +25,7 @@ public class SladkiiComponent implements Closeable {
         try {
             db = RocksDB.open(options, location);
         } catch (RocksDBException e) {
-            // TODO
-            System.err.println("Can not open DB: " + e.getMessage());
+            log.error("Can not open RocksDB by {}", location, e);
         }
     }
 
@@ -29,8 +34,7 @@ public class SladkiiComponent implements Closeable {
             byte[] value = db.get(toBytes(id));
             return value == null ? notFound() : new Response(Response.OK, value);
         } catch (RocksDBException e) {
-            // TODO
-            System.err.println("get");
+            log.error("get(id=\"{}\")", id, e);
             return internalError();
         }
     }
@@ -40,8 +44,7 @@ public class SladkiiComponent implements Closeable {
             db.put(toBytes(id), request.getBody());
             return created();
         } catch (RocksDBException e) {
-            // todo
-            System.err.println("put");
+            log.error("put(id=\"{}\")", id, e);
             return internalError();
         }
     }
@@ -51,8 +54,7 @@ public class SladkiiComponent implements Closeable {
             db.delete(toBytes(id));
             return accepted();
         } catch (RocksDBException e) {
-            // todo
-            System.err.println("put");
+            log.error("delete(id=\"{}\")", id, e);
             return internalError();
         }
     }
