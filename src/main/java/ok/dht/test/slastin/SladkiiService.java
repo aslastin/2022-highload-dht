@@ -21,7 +21,6 @@ public class SladkiiService implements Service {
     public static Supplier<Options> DEFAULT_OPTIONS_SUPPLIER = () -> new Options()
             .setCreateIfMissing(true)
             .setWriteBufferSize(DEFAULT_MEMTABLE_SIZE)
-            .setMaxTotalWalSize(DEFAULT_MEMTABLE_SIZE)
             .setLevelCompactionDynamicLevelBytes(true);
 
     private final ServiceConfig serviceConfig;
