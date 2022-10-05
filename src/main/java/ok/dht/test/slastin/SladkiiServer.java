@@ -11,11 +11,11 @@ import one.nio.net.Session;
 
 import java.io.IOException;
 
-public class SladkiiHttpServer extends HttpServer {
+public class SladkiiServer extends HttpServer {
 
     private final SladkiiComponent component;
 
-    public SladkiiHttpServer(HttpServerConfig httpServerConfig, SladkiiComponent component) throws IOException {
+    public SladkiiServer(HttpServerConfig httpServerConfig, SladkiiComponent component) throws IOException {
         super(httpServerConfig);
         this.component = component;
     }
@@ -27,15 +27,18 @@ public class SladkiiHttpServer extends HttpServer {
 
     @Override
     public synchronized void stop() {
-        // close sessions with clients
-        for (var selectorThread : selectors) {
-            selectorThread.selector.forEach(Session::close);
-        }
+        closeAllSessions();
         super.stop();
     }
 
+    private void closeAllSessions() {
+        for (var selectorThread : selectors) {
+            selectorThread.selector.forEach(Session::close);
+        }
+    }
+
     @Path("/v0/entity")
-    public Response handleRequest(@Param(value = "id", required = true) String id, Request request) {
+    public Response processRequest(@Param(value = "id", required = true) String id, Request request) {
         if (id.isBlank()) {
             return badRequest();
         }
