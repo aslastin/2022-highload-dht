@@ -24,10 +24,10 @@ public class SladkiiService implements Service {
             .setWriteBufferSize(DEFAULT_MEMTABLE_SIZE)
             .setLevelCompactionDynamicLevelBytes(true);
 
-    public static final Function<ServiceConfig, HttpServerConfig> DEFAULT_HTTP_CONFIG_MAPPER = serviceConfig -> {
+    public static final Function<ServiceConfig, HttpServerConfig> DEFAULT_HTTP_CONFIG_MAPPER = cfg -> {
         HttpServerConfig httpConfig = new HttpServerConfig();
         AcceptorConfig acceptor = new AcceptorConfig();
-        acceptor.port = serviceConfig.selfPort();
+        acceptor.port = cfg.selfPort();
         acceptor.reusePort = true;
         httpConfig.acceptors = new AcceptorConfig[]{acceptor};
         return httpConfig;
