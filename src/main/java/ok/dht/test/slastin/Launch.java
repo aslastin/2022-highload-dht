@@ -24,7 +24,7 @@ public final class Launch {
     private static Path createServerDirectory(final String serverDirectoryName) throws IOException {
         final Path serverDirectory = Path.of(serverDirectoryName);
         if (Files.notExists(serverDirectory)) {
-            Files.createDirectory(serverDirectory);
+            Files.createDirectories(serverDirectory);
         }
         return serverDirectory;
     }
