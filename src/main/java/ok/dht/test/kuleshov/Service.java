@@ -15,7 +15,6 @@ import one.nio.util.Utf8;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
-import static ok.dht.test.kuleshov.Validator.isCorrectId;
 import static ok.dht.test.kuleshov.utils.ConfigUtils.createConfigFromPort;
 import static ok.dht.test.kuleshov.utils.ResponseUtils.emptyResponse;
 
@@ -73,10 +72,6 @@ public class Service implements ok.dht.Service {
     }
 
     public Response handleGet(String id) {
-        if (!isCorrectId(id)) {
-            return emptyResponse(Response.BAD_REQUEST);
-        }
-
         try {
             Entry<MemorySegment> entry = memorySegmentDao.get(MemorySegment.ofArray(Utf8.toBytes(id)));
 

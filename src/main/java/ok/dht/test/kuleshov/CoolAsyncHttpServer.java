@@ -28,6 +28,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static ok.dht.test.kuleshov.Validator.isCorrectAckFrom;
+import static ok.dht.test.kuleshov.Validator.isCorrectId;
 import static ok.dht.test.kuleshov.utils.RequestsUtils.getTimestampHeader;
 import static ok.dht.test.kuleshov.utils.ResponseUtils.emptyResponse;
 
@@ -112,7 +113,7 @@ public class CoolAsyncHttpServer extends CoolHttpServer {
                 }
 
                 String id = request.getParameter("id=");
-                if (id == null || id.isBlank()) {
+                if (!isCorrectId(id)) {
                     session.sendResponse(emptyResponse(Response.BAD_REQUEST));
 
                     return;

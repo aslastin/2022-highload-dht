@@ -39,15 +39,10 @@ public class SlaveResponseHandler {
         }
     }
 
-    public boolean handleAck(Response response) {
+    public boolean handleAck() {
         int currentAck = ackCount.incrementAndGet();
 
-        if (currentAck == ack) {
-            sendResponse(response);
-            return true;
-        }
-
-        return false;
+        return currentAck == ack;
     }
 
     private void sendResponse(Response response) {
@@ -63,14 +58,16 @@ public class SlaveResponseHandler {
         switch (method) {
             case Request.METHOD_PUT -> {
                 if (response.getStatusCode() == 201) {
-                    if (handleAck(new Response(Response.CREATED, Response.EMPTY))) {
-                        return;
+                    if (handleAck()) {
+                        sendResponse(emptyResponse(Response.CREATED));
                     }
                 }
             }
             case Request.METHOD_DELETE -> {
                 if (response.getStatusCode() == 202) {
-                    handleAck(new Response(Response.ACCEPTED, Response.EMPTY));
+                    if (handleAck()) {
+                        sendResponse(emptyResponse(Response.ACCEPTED));
+                    }
                 }
             }
             case Request.METHOD_GET -> {
@@ -88,7 +85,14 @@ public class SlaveResponseHandler {
                     }
 
                     HandleResponse currentLastResponse = lastResponse.get();
-                    handleAck(new Response(currentLastResponse.getStringStatusCode(), currentLastResponse.getBody()));
+                    if (handleAck()) {
+                        Response responseToClient = new Response(
+                                currentLastResponse.getStringStatusCode(),
+                                currentLastResponse.getBody()
+                        );
+
+                        sendResponse(responseToClient);
+                    }
                 }
             }
             default -> sendResponse(emptyResponse(Response.METHOD_NOT_ALLOWED));
