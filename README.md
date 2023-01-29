@@ -57,6 +57,11 @@ $ ./gradlew run
 Когда всё будет готово, присылайте pull request со своей реализацией и оптимизациями на review.
 Не забывайте **отвечать на комментарии в PR** (в том числе автоматизированные) и **исправлять замечания**!
 
+## Solution
+
+- [Implementation](https://github.com/aslastin/2022-highload-dht/tree/stage-1/src/main/java/ok/dht/test/slastin)
+- [Report](https://github.com/aslastin/2022-highload-dht/blob/stage-1/src/main/java/ok/dht/test/slastin/reports/hw1/report.md)
+
 ## Этап 2. Асинхронный сервер (deadline 2022-10-05 23:59:59 MSK)
 
 Вынесите **обработку** запросов в отдельный `ExecutorService` с ограниченной очередью, чтобы разгрузить `SelectorThread`ы HTTP сервера.
@@ -67,6 +72,11 @@ $ ./gradlew run
 
 ### Report
 Когда всё будет готово, присылайте pull request с изменениями, результатами нагрузочного тестирования и профилирования, а также анализом результатов **по сравнению с предыдущей** (синхронной) версией.
+
+### Solution
+
+- [Implementation](https://github.com/aslastin/2022-highload-dht/tree/stage-2/src/main/java/ok/dht/test/slastin)
+- [Report](https://github.com/aslastin/2022-highload-dht/blob/stage-2/src/main/java/ok/dht/test/slastin/reports/stage2/report.md)
 
 ## Этап 3. Шардирование (bonus deadline 2022-10-12 23:59:59 MSK, hard deadline 2022-10-19 23:59:59 MSK)
 
@@ -84,6 +94,11 @@ $ ./gradlew run
 Присылайте pull request со своей реализацией поддержки кластерной конфигурации на review.
 Не забудьте нагрузить, отпрофилировать и проанализировать результаты профилирования под нагрузкой.
 С учётом шардирования набор тестов расширяется, поэтому не забывайте **подмёрдживать upstream**.
+
+### Solution
+
+- [Implementation](https://github.com/aslastin/2022-highload-dht/tree/stage-3/src/main/java/ok/dht/test/slastin)
+- [Report](https://github.com/aslastin/2022-highload-dht/blob/stage-3/src/main/java/ok/dht/test/slastin/reports/stage3/report.md)
 
 ## Этап 4. Репликация (deadline 2022-10-26 23:59:59 MSK)
 
@@ -137,6 +152,11 @@ HTTP API расширяется query-параметрами `from` и `ack`, с
 Не забудьте нагрузить, отпрофилировать и проанализировать результаты профилирования под нагрузкой.
 С учётом репликации набор тестов расширяется, поэтому не забывайте **подмёрдживать upstream**.
 
+### Solution
+
+- [Implementation](https://github.com/aslastin/2022-highload-dht/tree/stage-4/src/main/java/ok/dht/test/slastin)
+- [Report](https://github.com/aslastin/2022-highload-dht/blob/stage-4/src/main/java/ok/dht/test/slastin/reports/stage4/report.md)
+
 ## Этап 5. Асинхронное взаимодействие (bonus deadline 2022-11-02 23:59:59 MSK, hard deadline 2022-11-09 23:59:59 MSK)
 
 Переключаем внутреннее взаимодействие узлов на асинхронный `java.net.http.HttpClient`.
@@ -147,6 +167,11 @@ HTTP API расширяется query-параметрами `from` и `ack`, с
 Отпрофилируйте приложение (CPU, alloc и **lock**) под нагрузкой и сравните результаты latency и профилирования по сравнению с неасинхронной версией.
 
 Присылайте pull request со своей реализацией на review.
+
+### Solution
+
+- [Implementation](https://github.com/aslastin/2022-highload-dht/tree/stage-5/src/main/java/ok/dht/test/slastin)
+- [Report](https://github.com/aslastin/2022-highload-dht/blob/stage-5/src/main/java/ok/dht/test/slastin/reports/stage5/report.md)
 
 ## Этап 6. Range-запросы (deadline 2022-11-16 23:59:59 MSK)
 
@@ -160,6 +185,10 @@ HTTP API расширяется query-параметрами `from` и `ack`, с
 
 ### Report
 После прохождения модульных тестов, присылайте pull request с изменениями.
+
+### Solution
+
+- [Implementation](https://github.com/aslastin/2022-highload-dht/tree/stage-6/src/main/java/ok/dht/test/slastin)
 
 ## Этап 7. Бонусный (deadline 2022-11-30 23:59:59 MSK)
 
